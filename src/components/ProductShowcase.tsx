@@ -34,13 +34,15 @@ const ProductShowcase = () => {
     const header = headerRef.current;
     if (header) observer.observe(header);
 
-    cardsRef.current.forEach((card) => {
+    const cards = cardsRef.current;
+
+    cards.forEach((card) => {
       if (card) observer.observe(card);
     });
 
     return () => {
       if (header) observer.unobserve(header);
-      cardsRef.current.forEach((card) => {
+      cards.forEach((card) => {
         if (card) observer.unobserve(card);
       });
     };
