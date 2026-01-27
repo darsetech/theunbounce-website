@@ -105,7 +105,7 @@ const PrivacyPolicy = () => {
               We do not sell, rent, trade, or otherwise share, transfer, or disclose your Google user data with any third parties
               except as strictly necessary to provide the services you authorize. Your Google data is shared only with Google servers
               through their official APIs when you connect your account, and solely for the specific purposes outlined in Section 2
-              (Requested Google Scopes & How They're Used). We do not share Google user data with other companies, advertising networks,
+              (Requested Google Scopes & How They&apos;re Used). We do not share Google user data with other companies, advertising networks,
               or other third parties for marketing, analytics, or any other use beyond service provision. You retain control over your
               data at all times, and can revoke access through your Google account settings.
             </p>
@@ -127,7 +127,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">6. Money-Back Guarantee</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We offer a 30-day money-back guarantee. If you're not satisfied with our service for any reason, contact us within
+              We offer a 30-day money-back guarantee. If you&apos;re not satisfied with our service for any reason, contact us within
               30 days of your purchase for a full refund.
             </p>
           </section>
