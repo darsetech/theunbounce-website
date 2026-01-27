@@ -1,48 +1,55 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Upload, 
-  Download, 
-  Trash2, 
-  RefreshCw, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Upload,
+  Download,
+  Trash2,
+  RefreshCw,
+  FileText,
+  Clock,
+  CheckCircle,
   XCircle,
   AlertCircle,
   Plus,
   Wallet,
   Package,
   DollarSign,
-  Home
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { apiClient, JobStatusResponse, WalletResponse, SubscriptionResponse } from '@/lib/api';
-import { toast } from 'react-toastify';
-import Link from 'next/link';
+  Home,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  apiClient,
+  JobStatusResponse,
+  WalletResponse,
+  SubscriptionResponse,
+} from "@/lib/api";
+import { toast } from "react-toastify";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [jobs, setJobs] = useState<JobStatusResponse[]>([]);
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
-  const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
+      router.push("/auth/login");
       return;
     }
-    
+
     if (isAuthenticated) {
       fetchJobs();
     }
@@ -53,14 +60,15 @@ export default function DashboardPage() {
       const [jobsData, walletData, subscriptionData] = await Promise.all([
         apiClient.getUserJobs(),
         apiClient.getWalletBalance(),
-        apiClient.getCurrentSubscription().catch(() => null) // Handle no subscription case
+        apiClient.getCurrentSubscription().catch(() => null), // Handle no subscription case
       ]);
       setJobs(jobsData);
       setWallet(walletData);
       setSubscription(subscriptionData);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to fetch data: ' + errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to fetch data: " + errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -75,60 +83,61 @@ export default function DashboardPage() {
   const cancelJob = async (jobId: string) => {
     try {
       await apiClient.cancelJob(jobId);
-      toast.success('Job cancelled successfully');
+      toast.success("Job cancelled successfully");
       await fetchJobs();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to cancel job: ' + errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to cancel job: " + errorMessage);
     }
   };
 
-  const downloadResult = async (jobId: string, filename: string) => {
+  const downloadResult = async (jobId: string, filename?: string) => {
     try {
       const blob = await apiClient.downloadResult(jobId);
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `validation_result_${filename}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success('Download started');
+      toast.success("Download started");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to download: ' + errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to download: " + errorMessage);
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'processing':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'failed':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'cancelled':
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      case "completed":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "processing":
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      case "pending":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "failed":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "cancelled":
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
       default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircle className="w-4 h-4" />;
-      case 'processing':
+      case "processing":
         return <RefreshCw className="w-4 h-4 animate-spin" />;
-      case 'pending':
+      case "pending":
         return <Clock className="w-4 h-4" />;
-      case 'failed':
+      case "failed":
         return <XCircle className="w-4 h-4" />;
-      case 'cancelled':
+      case "cancelled":
         return <AlertCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -174,7 +183,11 @@ export default function DashboardPage() {
                 variant="outline"
                 className="border-border hover:bg-card"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 mr-2 ${
+                    isRefreshing ? "animate-spin" : ""
+                  }`}
+                />
                 Refresh
               </Button>
               <Link href="/dashboard/upload">
@@ -204,10 +217,14 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-3xl font-bold mb-2">
-              ${wallet?.balance_dollars.toFixed(2) || '0.00'}
+              ${wallet?.balance_dollars.toFixed(2) || "0.00"}
             </div>
             <Link href="/wallet">
-              <Button variant="outline" size="sm" className="w-full border-border hover:bg-card">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-border hover:bg-card"
+              >
                 Manage Wallet
               </Button>
             </Link>
@@ -222,7 +239,7 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-lg font-semibold">Subscription</h3>
                 <p className="text-muted-foreground text-sm">
-                  {subscription ? 'Active plan' : 'No active plan'}
+                  {subscription ? "Active plan" : "No active plan"}
                 </p>
               </div>
             </div>
@@ -235,7 +252,11 @@ export default function DashboardPage() {
                   {subscription.days_remaining} days remaining
                 </div>
                 <Link href="/packages">
-                  <Button variant="outline" size="sm" className="w-full border-border hover:bg-card">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-border hover:bg-card"
+                  >
                     View Plans
                   </Button>
                 </Link>
@@ -246,7 +267,11 @@ export default function DashboardPage() {
                   No active subscription
                 </div>
                 <Link href="/packages">
-                  <Button variant="outline" size="sm" className="w-full border-border hover:bg-card">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-border hover:bg-card"
+                  >
                     Browse Plans
                   </Button>
                 </Link>
@@ -267,13 +292,21 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-2">
               <Link href="/wallet">
-                <Button variant="outline" size="sm" className="w-full border-border hover:bg-card">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-border hover:bg-card"
+                >
                   <Wallet className="w-4 h-4 mr-2" />
                   Add Funds
                 </Button>
               </Link>
               <Link href="/packages">
-                <Button variant="outline" size="sm" className="w-full border-border hover:bg-card">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-border hover:bg-card"
+                >
                   <Package className="w-4 h-4 mr-2" />
                   Buy Package
                 </Button>
@@ -286,7 +319,9 @@ export default function DashboardPage() {
         {jobs.length === 0 ? (
           <Card className="p-12 text-center bg-gradient-card border-border">
             <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No validation jobs yet</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              No validation jobs yet
+            </h3>
             <p className="text-muted-foreground mb-6">
               Upload your first email list to get started with validation
             </p>
@@ -301,14 +336,20 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="grid gap-6">
               {jobs.map((job) => (
-                <Card key={job.job_id} className="p-6 bg-gradient-card border-border hover:border-primary/50 transition-all">
+                <Card
+                  key={job.job_id}
+                  className="p-6 bg-gradient-card border-border hover:border-primary/50 transition-all"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-primary" />
                       <div>
-                        <h3 className="font-semibold">Job {job.job_id.slice(0, 8)}...</h3>
+                        <h3 className="font-semibold">
+                          Job {job.job_id.slice(0, 8)}...
+                        </h3>
                         <p className="text-sm text-muted-foreground">
-                          Created {new Date(job.created_at).toLocaleDateString()}
+                          Created{" "}
+                          {new Date(job.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -320,19 +361,26 @@ export default function DashboardPage() {
                     </Badge>
                   </div>
 
-                  {job.status === 'processing' && (
+                  {job.status === "processing" && (
                     <div className="mb-4">
                       <div className="flex items-center justify-between text-sm mb-2">
                         <span className="text-muted-foreground">Progress</span>
-                        <span className="text-primary">{job.progress_percentage}%</span>
+                        <span className="text-primary">
+                          {job.progress_percentage}%
+                        </span>
                       </div>
-                      <Progress value={job.progress_percentage} className="h-2" />
+                      <Progress
+                        value={job.progress_percentage}
+                        className="h-2"
+                      />
                     </div>
                   )}
 
                   {job.error_message && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                      <p className="text-sm text-red-400">{job.error_message}</p>
+                      <p className="text-sm text-red-400">
+                        {job.error_message}
+                      </p>
                     </div>
                   )}
 
@@ -340,15 +388,16 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       {job.completed_at && (
                         <span>
-                          Completed {new Date(job.completed_at).toLocaleDateString()}
+                          Completed{" "}
+                          {new Date(job.completed_at).toLocaleDateString()}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
-                      {job.status === 'completed' && job.file_url && (
+                      {job.status === "completed" && job.file_url && (
                         <Button
-                          onClick={() => downloadResult(job.job_id, 'result.txt')}
+                          onClick={() => downloadResult(job.job_id)}
                           size="sm"
                           variant="outline"
                           className="border-border hover:bg-card"
@@ -357,8 +406,9 @@ export default function DashboardPage() {
                           Download
                         </Button>
                       )}
-                      
-                      {(job.status === 'pending' || job.status === 'processing') && (
+
+                      {(job.status === "pending" ||
+                        job.status === "processing") && (
                         <Button
                           onClick={() => cancelJob(job.job_id)}
                           size="sm"
