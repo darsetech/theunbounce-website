@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 const Header = () => {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
-  const telegramBotUrl = "https://t.me/VoidBouncebot";
+  // const telegramBotUrl = "https://t.me/VoidBouncebot";
 
   const handleLogout = () => {
     logout();

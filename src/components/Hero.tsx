@@ -3,7 +3,7 @@ import { CheckCircle, Mail, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 
 const Hero = () => {
-  const telegramBotUrl = "https://t.me/VoidBouncebot";
+  // const telegramBotUrl = "https://t.me/VoidBouncebot";
 
   return (
     <section className="min-h-screen flex items-center justify-center px-4 py-20">
