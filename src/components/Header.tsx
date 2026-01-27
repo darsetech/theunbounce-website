@@ -13,7 +13,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -32,19 +32,34 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm hover:text-primary transition-colors">
+            <a
+              href="#features"
+              className="text-sm hover:text-primary transition-colors"
+            >
               Features
             </a>
-            <a href="/packages" className="text-sm hover:text-primary transition-colors">
+            <a
+              href="/packages"
+              className="text-sm hover:text-primary transition-colors"
+            >
               Packages
             </a>
-            <a href="/validate" className="text-sm hover:text-primary transition-colors">
+            <a
+              href="/validate"
+              className="text-sm hover:text-primary transition-colors"
+            >
               Validate
             </a>
-            <a href="/void-mail-manager" className="text-sm hover:text-primary transition-colors">
+            <a
+              href="/void-mail-manager"
+              className="text-sm hover:text-primary transition-colors"
+            >
               Void Mail Manager
             </a>
-            <a href="/apiDocs" className="text-sm hover:text-primary transition-colors">
+            <a
+              href="/apiDocs"
+              className="text-sm hover:text-primary transition-colors"
+            >
               API Docs
             </a>
           </nav>
@@ -54,13 +69,19 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link href="/wallet">
-                  <Button variant="outline" className="border-border hover:bg-card">
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-card"
+                  >
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallet
                   </Button>
                 </Link>
                 <Link href="/dashboard">
-                  <Button variant="outline" className="border-border hover:bg-card">
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-card"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     Dashboard
                   </Button>
@@ -77,16 +98,16 @@ const Header = () => {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="outline" className="border-border hover:bg-card">
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-card"
+                  >
                     Sign In
                   </Button>
                 </Link>
-                <Button 
-                  variant="glow" 
-                  onClick={() => window.open(telegramBotUrl, '_blank')}
-                >
-                  Get Started
-                </Button>
+                <Link href="/auth/register">
+                  <Button variant="glow">Get Started</Button>
+                </Link>
               </>
             )}
           </div>

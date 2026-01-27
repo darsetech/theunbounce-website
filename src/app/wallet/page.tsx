@@ -1,34 +1,39 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Wallet, 
-  Plus, 
-  CreditCard, 
-  History, 
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Wallet,
+  Plus,
+  CreditCard,
+  History,
   DollarSign,
   RefreshCw,
   Home,
-  Clock
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { apiClient, WalletResponse, TransactionResponse, RechargeRequest } from '@/lib/api';
-import { toast } from 'react-toastify';
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+  Clock,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  apiClient,
+  WalletResponse,
+  TransactionResponse,
+  RechargeRequest,
+} from "@/lib/api";
+import { toast } from "react-toastify";
+import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function WalletPage() {
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRecharging, setIsRecharging] = useState(false);
-  const [rechargeAmount, setRechargeAmount] = useState('');
+  const [rechargeAmount, setRechargeAmount] = useState("");
   const [showRechargeForm, setShowRechargeForm] = useState(false);
   const [pendingTransaction, setPendingTransaction] = useState<{
     transaction_id: string;
@@ -36,15 +41,15 @@ export default function WalletPage() {
     payment_url: string;
   } | null>(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
-  
+
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = '/auth/login';
+      window.location.href = "/auth/login";
       return;
     }
-    
+
     if (isAuthenticated) {
       fetchWalletData();
     }
@@ -54,13 +59,14 @@ export default function WalletPage() {
     try {
       const [walletData, transactionsData] = await Promise.all([
         apiClient.getWalletBalance(),
-        apiClient.getWalletTransactions()
+        apiClient.getWalletTransactions(),
       ]);
       setWallet(walletData);
       setTransactions(transactionsData);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Failed to fetch wallet data: ' + errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to fetch wallet data: " + errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +75,7 @@ export default function WalletPage() {
   const handleRecharge = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rechargeAmount || parseFloat(rechargeAmount) <= 0) {
-      toast.error('Please enter a valid amount');
+      toast.error("Please enter a valid amount");
       return;
     }
 
@@ -77,34 +83,35 @@ export default function WalletPage() {
     try {
       const rechargeRequest: RechargeRequest = {
         amount_dollars: parseFloat(rechargeAmount),
-        payment_method: 'nowpay'
+        payment_method: "nowpay",
       };
 
       const result = await apiClient.rechargeWallet(rechargeRequest);
-      
-      if (result.status === 'pending' && result.payment_url) {
+
+      if (result.status === "pending" && result.payment_url) {
         // Store pending transaction info
         setPendingTransaction({
           transaction_id: result.transaction_id,
           amount: result.amount_dollars,
-          payment_url: result.payment_url
+          payment_url: result.payment_url,
         });
-        
+
         toast.success(`Payment invoice created! Please complete payment.`);
-        setRechargeAmount('');
+        setRechargeAmount("");
         setShowRechargeForm(false);
-        
+
         // Start checking payment status
         checkPaymentStatus(result.transaction_id);
       } else {
         toast.success(`Successfully recharged $${rechargeAmount}`);
-        setRechargeAmount('');
+        setRechargeAmount("");
         setShowRechargeForm(false);
         await fetchWalletData();
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error('Recharge failed: ' + errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error("Recharge failed: " + errorMessage);
     } finally {
       setIsRecharging(false);
     }
@@ -113,17 +120,22 @@ export default function WalletPage() {
   const checkPaymentStatus = async (transactionId: string) => {
     setIsCheckingPayment(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/wallet/payment-status/${transactionId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001"}/wallet/payment-status/${transactionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
       if (response.ok) {
         const status = await response.json();
-        
-        if (status.status === 'completed') {
-          toast.success(`Payment completed! Wallet credited with $${status.amount_dollars}`);
+
+        if (status.status === "completed") {
+          toast.success(
+            `Payment completed! Wallet credited with $${status.amount_dollars}`,
+          );
           setPendingTransaction(null);
           await fetchWalletData();
         } else {
@@ -132,7 +144,7 @@ export default function WalletPage() {
         }
       }
     } catch (error) {
-      console.error('Error checking payment status:', error);
+      console.error("Error checking payment status:", error);
     } finally {
       setIsCheckingPayment(false);
     }
@@ -140,13 +152,13 @@ export default function WalletPage() {
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'recharge':
+      case "recharge":
         return <Plus className="w-4 h-4 text-green-400" />;
-      case 'purchase':
+      case "purchase":
         return <CreditCard className="w-4 h-4 text-blue-400" />;
-      case 'deduction':
+      case "deduction":
         return <DollarSign className="w-4 h-4 text-red-400" />;
-      case 'refund':
+      case "refund":
         return <RefreshCw className="w-4 h-4 text-yellow-400" />;
       default:
         return <DollarSign className="w-4 h-4 text-gray-400" />;
@@ -155,16 +167,16 @@ export default function WalletPage() {
 
   const getTransactionColor = (type: string) => {
     switch (type) {
-      case 'recharge':
-        return 'text-green-400';
-      case 'purchase':
-        return 'text-blue-400';
-      case 'deduction':
-        return 'text-red-400';
-      case 'refund':
-        return 'text-yellow-400';
+      case "recharge":
+        return "text-green-400";
+      case "purchase":
+        return "text-blue-400";
+      case "deduction":
+        return "text-red-400";
+      case "refund":
+        return "text-yellow-400";
       default:
-        return 'text-gray-400';
+        return "text-gray-400";
     }
   };
 
@@ -182,7 +194,7 @@ export default function WalletPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       <main className="pt-20 pb-16">
         <div className="max-w-6xl mx-auto px-4 py-12">
           {/* Header */}
@@ -215,7 +227,9 @@ export default function WalletPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold">Account Balance</h2>
-                  <p className="text-muted-foreground">Current available balance</p>
+                  <p className="text-muted-foreground">
+                    Current available balance
+                  </p>
                 </div>
               </div>
               <Button
@@ -229,7 +243,7 @@ export default function WalletPage() {
 
             <div className="text-center">
               <div className="text-6xl font-bold mb-2">
-                ${wallet?.balance_dollars.toFixed(2) || '0.00'}
+                ${wallet?.balance_dollars.toFixed(2) || "0.00"}
               </div>
               <p className="text-muted-foreground">
                 {wallet?.balance_cents || 0} cents
@@ -239,7 +253,9 @@ export default function WalletPage() {
             {/* Recharge Form */}
             {showRechargeForm && (
               <div className="mt-8 p-6 bg-background/30 rounded-lg border border-border">
-                <h3 className="text-lg font-semibold mb-4">Add Funds to Wallet</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Add Funds to Wallet
+                </h3>
                 <form onSubmit={handleRecharge} className="space-y-4">
                   <div>
                     <Label htmlFor="amount" className="text-sm font-medium">
@@ -264,7 +280,7 @@ export default function WalletPage() {
                       Minimum: $1.00, Maximum: $1,000.00
                     </p>
                   </div>
-                  
+
                   <div className="flex gap-4">
                     <Button
                       type="submit"
@@ -311,11 +327,13 @@ export default function WalletPage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center p-4 bg-background/30 rounded-lg">
                   <div>
-                    <p className="font-medium">Amount: ${pendingTransaction.amount}</p>
+                    <p className="font-medium">
+                      Amount: ${pendingTransaction.amount}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Transaction ID: {pendingTransaction.transaction_id}
                     </p>
@@ -327,10 +345,12 @@ export default function WalletPage() {
                     <span className="text-sm text-yellow-400">Pending</span>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => window.location.href = pendingTransaction.payment_url}
+                    onClick={() =>
+                      (window.location.href = pendingTransaction.payment_url)
+                    }
                     className="bg-gradient-primary hover:opacity-90 text-primary-foreground text-lg px-8 py-3"
                     size="lg"
                   >
@@ -345,10 +365,12 @@ export default function WalletPage() {
                     Cancel
                   </Button>
                 </div>
-                
+
                 <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <p className="text-sm text-blue-400">
-                    💡 <strong>Tip:</strong> Click &quot;Complete Payment&quot; to be redirected to NowPay where you can pay securely with crypto or fiat.
+                    💡 <strong>Tip:</strong> Click &quot;Complete Payment&quot;
+                    to be redirected to NowPay where you can pay securely with
+                    crypto or fiat.
                   </p>
                 </div>
               </div>
@@ -365,9 +387,12 @@ export default function WalletPage() {
             {transactions.length === 0 ? (
               <div className="text-center py-12">
                 <DollarSign className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No transactions yet</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  No transactions yet
+                </h3>
                 <p className="text-muted-foreground">
-                  Your transaction history will appear here once you start using the service
+                  Your transaction history will appear here once you start using
+                  the service
                 </p>
               </div>
             ) : (
@@ -383,29 +408,37 @@ export default function WalletPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold capitalize">
-                          {transaction.type.replace('_', ' ')}
+                          {transaction.type.replace("_", " ")}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {transaction.description}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(transaction.created_at).toLocaleDateString()} at{' '}
-                          {new Date(transaction.created_at).toLocaleTimeString()}
+                          {new Date(
+                            transaction.created_at,
+                          ).toLocaleDateString()}{" "}
+                          at{" "}
+                          {new Date(
+                            transaction.created_at,
+                          ).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="text-right">
-                      <div className={`font-semibold ${getTransactionColor(transaction.type)}`}>
-                        {transaction.amount_cents > 0 ? '+' : ''}${transaction.amount_dollars.toFixed(2)}
+                      <div
+                        className={`font-semibold ${getTransactionColor(transaction.type)}`}
+                      >
+                        {transaction.amount_cents > 0 ? "+" : ""}$
+                        {(transaction.amount_cents / 100).toFixed(2)}
                       </div>
-                      <Badge 
+                      <Badge
                         className={
-                          transaction.status === 'completed' 
-                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                            : transaction.status === 'pending'
-                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                            : 'bg-red-500/20 text-red-400 border-red-500/30'
+                          transaction.status === "completed"
+                            ? "bg-green-500/20 text-green-400 border-green-500/30"
+                            : transaction.status === "pending"
+                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                              : "bg-red-500/20 text-red-400 border-red-500/30"
                         }
                       >
                         {transaction.status}
